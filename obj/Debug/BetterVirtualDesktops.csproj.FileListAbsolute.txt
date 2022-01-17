@@ -1,0 +1,7 @@
+C:\Users\Anthony\source\repos\BetterVirtualDesktops\obj\Debug\BetterVirtualDesktops.csproj.AssemblyReference.cache
+C:\Users\Anthony\source\repos\BetterVirtualDesktops\obj\Debug\BetterVirtualDesktops.csproj.SuggestedBindingRedirects.cache
+C:\Users\Anthony\source\repos\BetterVirtualDesktops\obj\Debug\BetterVirtualDesktops.csproj.CoreCompileInputs.cache
+C:\Users\Anthony\source\repos\BetterVirtualDesktops\bin\Debug\BetterVirtualDesktops.exe
+C:\Users\Anthony\source\repos\BetterVirtualDesktops\bin\Debug\BetterVirtualDesktops.pdb
+C:\Users\Anthony\source\repos\BetterVirtualDesktops\obj\Debug\BetterVirtualDesktops.exe
+C:\Users\Anthony\source\repos\BetterVirtualDesktops\obj\Debug\BetterVirtualDesktops.pdb
