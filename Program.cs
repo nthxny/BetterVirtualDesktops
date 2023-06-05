@@ -14,6 +14,39 @@ namespace BetterVirtualDesktops
             HotKeyManager.RegisterHotKey(Keys.Up, KeyModifiers.Control | KeyModifiers.Windows);
             HotKeyManager.RegisterHotKey(Keys.Down, KeyModifiers.Control | KeyModifiers.Windows);
 
+            foreach(string arg in args)
+            {
+                var lowerCaseArg = arg.ToLower();
+                var doReturn = false;
+                switch(lowerCaseArg)
+                {
+                    case "next":
+                    case "-next":
+                    {
+                        NextDesktop();
+                        doReturn = true;
+                        break;
+                    }
+                    case "prev":
+                    case "previous":
+                    case "-prev":
+                    case "-previous":
+                    {
+                        PrevDesktop();
+                        doReturn = true;
+                        break;
+                    }
+                    default:
+                    {
+                        break;
+                    }
+                }
+                if(doReturn)
+                {
+                    return;
+                }
+            }
+
             HotKeyManager.HotKeyPressed += (obj, args) =>
             { 
                 switch (args.Key) 
