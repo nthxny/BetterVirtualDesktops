@@ -12,7 +12,40 @@ namespace BetterVirtualDesktops
         public static void Main(string[] args) 
         {
             HotKeyManager.RegisterHotKey(Keys.Up, KeyModifiers.Control | KeyModifiers.Windows);
-            //HotKeyManager.RegisterHotKey(Keys.Down, KeyModifiers.Control | KeyModifiers.Windows);
+            HotKeyManager.RegisterHotKey(Keys.Down, KeyModifiers.Control | KeyModifiers.Windows);
+
+            foreach(string arg in args)
+            {
+                var lowerCaseArg = arg.ToLower();
+                var doReturn = false;
+                switch(lowerCaseArg)
+                {
+                    case "next":
+                    case "-next":
+                    {
+                        NextDesktop();
+                        doReturn = true;
+                        break;
+                    }
+                    case "prev":
+                    case "previous":
+                    case "-prev":
+                    case "-previous":
+                    {
+                        PrevDesktop();
+                        doReturn = true;
+                        break;
+                    }
+                    default:
+                    {
+                        break;
+                    }
+                }
+                if(doReturn)
+                {
+                    return;
+                }
+            }
 
             HotKeyManager.HotKeyPressed += (obj, args) =>
             { 
@@ -20,12 +53,12 @@ namespace BetterVirtualDesktops
                 {
                     case Keys.Up: 
                     {
-                        SwapDesktop();
+                        NextDesktop();
                         break;
                     }
                     case Keys.Down:
                     {
-                        
+                        PrevDesktop();
                         break;
                     }
                 }
@@ -35,7 +68,7 @@ namespace BetterVirtualDesktops
         }
 
 
-        public static void SwapDesktop()
+        public static void NextDesktop()
         {
             try
             {
@@ -52,6 +85,24 @@ namespace BetterVirtualDesktops
                 Console.WriteLine(e);
             }
         }
+
+        public static void PrevDesktop()
+        {
+            try
+            {
+                //DesktopHelper.SetLockForWindowsOnMonitor(@"\\.\DISPLAY3");
+                var desktop = GetPrevDesktop();
+
+                if ((Control.MouseButtons & MouseButtons.Left) != 0)
+                    desktop.MoveActiveWindow();
+
+                desktop.MakeVisible();
+            }
+            catch (Exception e)
+            {
+                Console.WriteLine(e);
+            }
+        }
         
         public static Desktop CurrentDesktop => Desktop.FromIndex(Desktop.FromDesktop(Desktop.Current));
         
@@ -63,6 +114,17 @@ namespace BetterVirtualDesktops
             // round robin desktops
             int target = (visibleDesktop + 1) % desktopCount; 
             
+            return VirtualDesktop.Desktop.FromIndex(target);
+        }
+
+        public static Desktop GetPrevDesktop()
+        {
+            int desktopCount = Desktop.Count;
+            int visibleDesktop = Desktop.FromDesktop(VirtualDesktop.Desktop.Current);
+
+            // round robin desktops
+            int target = (visibleDesktop + desktopCount - 1) % desktopCount;
+
             return VirtualDesktop.Desktop.FromIndex(target);
         }
     }

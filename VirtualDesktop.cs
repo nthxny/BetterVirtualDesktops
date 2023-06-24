@@ -1,6 +1,6 @@
 ﻿// Author: Markus Scholtes, 2021
-// Version 1.9, 2021-10-08
-// Version for Windows 10 21H2 and Windows 11
+// Version 1.9, 2021-11-13
+// Version for Windows 11 Insider 22489
 // Compile with:
 // C:\Windows\Microsoft.NET\Framework\v4.0.30319\csc.exe VirtualDesktop11.cs
 
@@ -10,6 +10,8 @@ using System.Runtime.InteropServices;
 using System.ComponentModel;
 using System.Text;
 using System.Windows.Forms;
+
+// Based on http://stackoverflow.com/a/32417530, Windows 10 SDK, github project Grabacr07/VirtualDesktop and own research
 
 namespace VirtualDesktop
 {
@@ -154,6 +156,7 @@ namespace VirtualDesktop
 		void MoveViewToDesktop(IApplicationView view, IVirtualDesktop desktop);
 		bool CanViewMoveDesktops(IApplicationView view);
 		IVirtualDesktop GetCurrentDesktop(IntPtr hWndOrMon);
+		IObjectArray GetAllCurrentDesktops();
 		void GetDesktops(IntPtr hWndOrMon, out IObjectArray desktops);
 		[PreserveSig]
 		int GetAdjacentDesktop(IVirtualDesktop from, int direction, out IVirtualDesktop desktop);
@@ -165,10 +168,10 @@ namespace VirtualDesktop
 		void GetDesktopSwitchIncludeExcludeViews(IVirtualDesktop desktop, out IObjectArray unknown1, out IObjectArray unknown2);
 		void SetDesktopName(IVirtualDesktop desktop, [MarshalAs(UnmanagedType.HString)] string name);
 		void SetDesktopWallpaper(IVirtualDesktop desktop, [MarshalAs(UnmanagedType.HString)] string path);
-	    void UpdateWallpaperPathForAllDesktops([MarshalAs(UnmanagedType.HString)] string path);
-	    void CopyDesktopState(IApplicationView pView0, IApplicationView pView1);
-	    int GetDesktopIsPerMonitor();
-	    void SetDesktopIsPerMonitor(bool state);
+		void UpdateWallpaperPathForAllDesktops([MarshalAs(UnmanagedType.HString)] string path);
+		void CopyDesktopState(IApplicationView pView0, IApplicationView pView1);
+		int GetDesktopIsPerMonitor();
+		void SetDesktopIsPerMonitor(bool state);
 	}
 
 	[ComImport]
@@ -200,7 +203,7 @@ namespace VirtualDesktop
 	internal interface IObjectArray
 	{
 		void GetCount(out int count);
-		void GetAt(int index, ref Guid iid, [MarshalAs(UnmanagedType.Interface)]out object obj);
+		void GetAt(int index, ref Guid iid, [MarshalAs(UnmanagedType.Interface)] out object obj);
 	}
 
 	[ComImport]
@@ -231,7 +234,7 @@ namespace VirtualDesktop
 		internal static IVirtualDesktopPinnedApps VirtualDesktopPinnedApps;
 
 		internal static IVirtualDesktop GetDesktop(int index)
-		{	// get desktop with index
+		{   // get desktop with index
 			int count = VirtualDesktopManagerInternal.GetCount(IntPtr.Zero);
 			if (index < 0 || index >= count) throw new ArgumentOutOfRangeException("index");
 			IObjectArray desktops;
@@ -253,7 +256,8 @@ namespace VirtualDesktop
 			{
 				desktops.GetAt(i, typeof(IVirtualDesktop).GUID, out objdesktop);
 				if (IdSearch.CompareTo(((IVirtualDesktop)objdesktop).GetId()) == 0)
-				{ index = i;
+				{
+					index = i;
 					break;
 				}
 			}
@@ -286,7 +290,7 @@ namespace VirtualDesktop
 
 		// get handle of active window
 		[DllImport("user32.dll")]
-		public static extern IntPtr GetForegroundWindow();
+		private static extern IntPtr GetForegroundWindow();
 
 		private IVirtualDesktop ivd;
 		private Desktop(IVirtualDesktop desktop) { this.ivd = desktop; }
@@ -334,7 +338,8 @@ namespace VirtualDesktop
 
 			// get desktop name
 			string desktopName = null;
-			try {
+			try
+			{
 				desktopName = desktop.ivd.GetName();
 			}
 			catch { }
@@ -352,7 +357,8 @@ namespace VirtualDesktop
 
 			// get desktop name
 			string desktopName = null;
-			try {
+			try
+			{
 				desktopName = DesktopManager.GetDesktop(index).GetName();
 			}
 			catch { }
@@ -370,7 +376,8 @@ namespace VirtualDesktop
 
 			// read desktop name in registry
 			string desktopName = null;
-			try {
+			try
+			{
 				desktopName = DesktopManager.GetDesktop(index).GetName();
 			}
 			catch { }
@@ -387,7 +394,8 @@ namespace VirtualDesktop
 
 			// get desktop name
 			string desktopwppath = "";
-			try {
+			try
+			{
 				desktopwppath = DesktopManager.GetDesktop(index).GetWallpaperPath();
 			}
 			catch { }
@@ -402,14 +410,15 @@ namespace VirtualDesktop
 			for (int i = 0; i < DesktopManager.VirtualDesktopManagerInternal.GetCount(IntPtr.Zero); i++)
 			{ // loop through all virtual desktops and compare partial name to desktop name
 				if (DesktopNameFromIndex(i).ToUpper().IndexOf(partialName.ToUpper()) >= 0)
-				{ index = i;
+				{
+					index = i;
 					break;
 				}
 			}
 
 			return index;
 		}
-  
+
 		public static Desktop Create()
 		{ // create a new desktop
 			return new Desktop(DesktopManager.VirtualDesktopManagerInternal.CreateDesktop(IntPtr.Zero));
@@ -436,7 +445,7 @@ namespace VirtualDesktop
 
 			DesktopManager.VirtualDesktopManagerInternal.RemoveDesktop(ivd, fallbackdesktop);
 		}
-		
+
 		public static void RemoveAll()
 		{ // remove all desktops but visible
 			DesktopManager.VirtualDesktopManagerInternal.SetDesktopIsPerMonitor(true);
@@ -523,7 +532,8 @@ namespace VirtualDesktop
 			{ // window of other process
 				IApplicationView view;
 				DesktopManager.ApplicationViewCollection.GetViewForHwnd(hWnd, out view);
-				try {
+				try
+				{
 					DesktopManager.VirtualDesktopManagerInternal.MoveViewToDesktop(view, ivd);
 				}
 				catch
@@ -599,8 +609,8 @@ namespace VirtualDesktop
 		}
 	}
 	#endregion
-	
-	
+
+
 	static class DesktopHelper
 	{
 		static bool verbose = true;
@@ -627,10 +637,10 @@ namespace VirtualDesktop
 		[return: MarshalAs(UnmanagedType.Bool)]
 		private static extern bool IsWindowVisible(IntPtr hWnd);
 
-		[DllImport("user32.dll", CharSet=CharSet.Auto, SetLastError=true)]
+		[DllImport("user32.dll", CharSet = CharSet.Auto, SetLastError = true)]
 		private static extern bool EnumDesktopWindows(IntPtr hDesktop, EnumDelegate lpEnumCallbackFunction, IntPtr lParam);
 
-		[DllImport("user32.dll", CharSet=CharSet.Auto, SetLastError=true)]
+		[DllImport("user32.dll", CharSet = CharSet.Auto, SetLastError = true)]
 		private static extern int GetWindowText(IntPtr hWnd, StringBuilder lpWindowText, int nMaxCount);
 
 		const int MAXTITLE = 255;
@@ -676,8 +686,8 @@ namespace VirtualDesktop
 			}
 			return foundHandle;
 		}
-		
-		
+
+
 		public static List<IntPtr> GetWindowsOnMonitor()
 		{
 			List<IntPtr> Windows = new List<IntPtr>();
